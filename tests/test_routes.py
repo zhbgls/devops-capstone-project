@@ -196,3 +196,31 @@ class TestAccountService(TestCase):
         """It should allow an idempotent delete of a missing Account"""
         response = self.client.delete(f"{BASE_URL}/99999")
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_security_headers(self):
+        """It should set security headers on API responses"""
+        response = self.client.get("/health")
+        self.assertEqual(response.headers["X-Content-Type-Options"], "nosniff")
+        self.assertEqual(response.headers["X-Frame-Options"], "SAMEORIGIN")
+        self.assertIn("default-src 'self'", response.headers["Content-Security-Policy"])
+
+    def test_cors(self):
+        """It should allow cross-origin API calls and preflight"""
+        origin = "https://example.com"
+        response = self.client.get(BASE_URL, headers={"Origin": origin})
+        self.assertEqual(response.headers["Access-Control-Allow-Origin"], origin)
+        preflight = self.client.options(
+            BASE_URL,
+            headers={
+                "Origin": origin,
+                "Access-Control-Request-Method": "POST",
+                "Access-Control-Request-Headers": "Content-Type",
+            },
+        )
+        self.assertEqual(preflight.status_code, status.HTTP_200_OK)
+        self.assertIn("POST", preflight.headers["Access-Control-Allow-Methods"])
+
+    def test_method_not_allowed(self):
+        """It should reject unsupported HTTP methods"""
+        response = self.client.patch(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
