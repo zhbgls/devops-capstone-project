@@ -8,6 +8,7 @@ Test cases can be run with the following:
 import os
 import logging
 from unittest import TestCase
+from unittest.mock import patch
 from tests.factories import AccountFactory
 from service.common import status  # HTTP Status Codes
 from service.models import db, Account, init_db
@@ -224,3 +225,16 @@ class TestAccountService(TestCase):
         """It should reject unsupported HTTP methods"""
         response = self.client.patch(BASE_URL)
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_internal_server_error(self):
+        """It should return a JSON error when a database operation fails"""
+        with patch(
+            "service.routes.Account.all",
+            side_effect=RuntimeError("Database unavailable"),
+        ):
+            with patch.dict(
+                app.config, {"TESTING": False, "PROPAGATE_EXCEPTIONS": False}
+            ):
+                response = self.client.get(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        self.assertEqual(response.get_json()["error"], "Internal Server Error")
