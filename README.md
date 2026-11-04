@@ -1,5 +1,7 @@
 # devops-capstone-project
 
+[![CI Build](https://github.com/zhbgls/devops-capstone-project/actions/workflows/ci-build.yaml/badge.svg)](https://github.com/zhbgls/devops-capstone-project/actions/workflows/ci-build.yaml)
+
 Customer Accounts REST microservice for the IBM DevOps Capstone Project. Built from the IBM starter template.
 
 ## Project scope
@@ -20,7 +22,7 @@ Use the IBM Skills Network Cloud IDE provided by the course.
 source bin/setup.sh
 make install
 make db
-make test
+make tests
 make run
 ```
 
@@ -31,3 +33,4 @@ Accounts contain id, name, email, address, phone_number, and date_joined.
 ## License and attribution
 
 Licensed under Apache License 2.0. Starter code: IBM Developer Skills Network, John Rofrano. See LICENSE.
+
